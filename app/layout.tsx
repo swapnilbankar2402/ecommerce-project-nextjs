@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/store/providers";
+import { CartProvider } from "@/lib/cart";
+import { Navbar } from "@/components/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,11 +28,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
+      {/* <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
         <Toaster richColors />
+      </body> */}
+
+      <body>
+        <CartProvider>
+          <div className="min-h-screen bg-background">
+            <Navbar />
+            <main className="container mx-auto px-4 py-8">
+              <Providers>{children}</Providers>
+              <Toaster richColors />
+            </main>
+            <footer className="bg-muted py-8 mt-12">
+              <div className="container mx-auto px-4 text-center">
+                © 2023 My E-commerce Store
+              </div>
+            </footer>
+          </div>
+          <Toaster />
+        </CartProvider>
       </body>
     </html>
   );
