@@ -40,12 +40,14 @@ export async function POST(req: Request) {
       {
         success: true,
         message: "User created successfully",
-        accessToken,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+        data: {
+          accessToken,
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
         },
       },
       { status: 201 }

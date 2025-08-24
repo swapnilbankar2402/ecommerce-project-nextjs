@@ -10,6 +10,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
+import { useDispatch } from "react-redux"
+import { setAuth } from "@/store/slices/authSlice"
 
 const signUpSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +30,8 @@ export function SignUpForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+
+    const dispatch = useDispatch();
 
     const {
         register,
@@ -50,13 +54,14 @@ export function SignUpForm({
             const response = await fetch('/api/auth/sign-up', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: "include", // ✅ saves refresh token in HttpOnly cookie
             })
 
             const result = await response.json();
-            // console.log("result :", result);
 
             if (result.success) {
+                dispatch(setAuth({ user: result.data.user, accessToken: result.data.accessToken }));
                 toast(result.message)
             }
 
