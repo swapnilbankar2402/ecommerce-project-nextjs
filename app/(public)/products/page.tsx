@@ -74,81 +74,77 @@ export default function ProductsPage() {
 
   return (
     <>
+
       <NavigationTabs />
 
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto md:p-2">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Products</h1>
-            <p className="text-muted-foreground mt-1">
-              {filteredProducts.length} products found
-            </p>
-          </div>
+        {/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        </div> */}
 
-          {/* Mobile Filter Button */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 w-full sm:w-auto">
-                  <Filter className="h-4 w-4" />
-                  Filters
-                  {hasActiveFilters && (
-                    <Badge variant="secondary" className="ml-1">Active</Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[350px] overflow-y-auto">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-semibold">Filters</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsFilterOpen(false)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <ProductFilters
-                  categories={categories}
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={setSelectedCategory}
-                  onSortChange={setSortOption}
-                  priceRange={priceRange}
-                  onPriceRangeChange={setPriceRange}
-                  sortOption={sortOption}
-                />
-
+        {/* Mobile Filter Button */}
+        <div className="sm:hidden flex justify-between items-center gap-2 w-full">
+          <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2 w-1/2">
+                <Filter className="h-4 w-4" />
+                Filters
                 {hasActiveFilters && (
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={clearAllFilters}
-                  >
-                    Clear All Filters
-                  </Button>
+                  <Badge variant="secondary" className="ml-1">Active</Badge>
                 )}
-              </SheetContent>
-            </Sheet>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[350px] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-semibold">Filters</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsFilterOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
 
-            {/* Sort Dropdown (Mobile) */}
-            <div className="sm:hidden w-full">
-              <select
-                className="w-full p-2 border rounded-md"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-              >
-                <option value="featured">Featured</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
-                <option value="newest">Newest</option>
-              </select>
-            </div>
+              <ProductFilters
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                onSortChange={setSortOption}
+                priceRange={priceRange}
+                onPriceRangeChange={setPriceRange}
+                sortOption={sortOption}
+              />
+
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={clearAllFilters}
+                >
+                  Clear All Filters
+                </Button>
+              )}
+            </SheetContent>
+          </Sheet>
+
+          {/* Sort Dropdown (Mobile) */}
+          <div className='w-1/2' >
+            <select
+              className="p-2 border rounded-md"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+            >
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="rating">Highest Rated</option>
+              <option value="newest">Newest</option>
+            </select>
           </div>
         </div>
+
 
         {/* Active Filters Display */}
         {hasActiveFilters && (
@@ -188,10 +184,11 @@ export default function ProductsPage() {
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* Filters Sidebar (Desktop) */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-24">
+            {/* <div className=""> */}
               <ProductFilters
                 categories={categories}
                 selectedCategory={selectedCategory}
