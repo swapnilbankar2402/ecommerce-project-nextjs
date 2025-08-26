@@ -11,7 +11,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
 import { useDispatch } from "react-redux"
-import { setAuth } from "@/store/slices/authSlice"
+import { AppDispatch } from "@/store/store"
+import { registerUser } from "@/store/slices/authSlice"
+import { useRouter } from "next/navigation"
 
 const signUpSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -25,13 +27,13 @@ const signUpSchema = z.object({
 
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
-
 export function SignUpForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
 
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
 
     const {
         register,
@@ -50,21 +52,21 @@ export function SignUpForm({
 
     const onSubmit = async (data: SignUpFormValues) => {
         try {
-            console.log("Submitting signup data:", data);
-            const response = await fetch('/api/auth/sign-up', {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
-                credentials: "include", // ✅ saves refresh token in HttpOnly cookie
-            })
+            // Remove acceptTerms from the data sent to API
+            const { acceptTerms, ...apiData } = data;
 
-            const result = await response.json();
+            // Dispatch the registerUser thunk
+            const result = await dispatch(registerUser(apiData));
 
-            if (result.success) {
-                dispatch(setAuth({ user: result.data.user, accessToken: result.data.accessToken }));
-                toast(result.message)
+            if (registerUser.fulfilled.match(result)) {
+                toast.success("Account created successfully!");
+                // Redirect to products page
+                router.push('/products');
+            } else {
+                // Handle error case
+                const errorMessage = result.payload as string;
+                toast.error(errorMessage || "Sign up failed");
             }
-
         } catch (err: any) {
             console.error("Signup failed", err);
             toast(err.error)

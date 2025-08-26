@@ -14,29 +14,43 @@ export function signRefreshToken(payload: object) {
 }
 
 export function verifyAccessToken(token: string) {
-  return jwt.verify(token, ACCESS_SECRET);
+  try {
+    return jwt.verify(token, ACCESS_SECRET);
+  } catch (error) {
+    return null;
+  }
 }
 
 export function verifyRefreshToken(token: string) {
-  return jwt.verify(token, REFRESH_SECRET);
+  try {
+    return jwt.verify(token, REFRESH_SECRET);
+  } catch (error) {
+    return null;
+  }
 }
 
-// Set HttpOnly cookie
+// ✅ Set HttpOnly cookie
 export function setRefreshCookie(token: string) {
-  const res = NextResponse.next(); // or NextResponse.json(...) in API
+  const res = NextResponse.next();
   res.cookies.set("refreshToken", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
   });
   return res;
 }
 
-// Clear cookie
+// ✅ Clear cookie
 export function clearRefreshCookie() {
   const res = NextResponse.next();
-  res.cookies.set("refreshToken", "", { maxAge: 0, path: "/" });
+  res.cookies.set("refreshToken", "", {
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
   return res;
 }
