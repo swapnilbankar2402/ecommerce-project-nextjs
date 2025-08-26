@@ -1,30 +1,44 @@
-// import { NextResponse } from "next/server";
-// import { clearRefreshCookie } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 
-// export async function POST() {
-//   clearRefreshCookie();
-//   return NextResponse.json({ message: "Logged out successfully" });
-// }
-
-
-// pages/api/auth/logout.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-
-interface LogoutResponseBody {
-  success: boolean;
-  message?: string;
-}
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<LogoutResponseBody>
-) {
+export async function POST(request: NextRequest) {
   try {
-    // Clear refresh token cookie
-    res.setHeader('Set-Cookie', 'refreshToken=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict');
-    return res.status(200).json({ success: true, message: 'Logged out successfully' });
+    // Get the current refresh token cookie (for logging purposes)
+    const refreshToken = request.cookies.get("refreshToken")?.value;
+    console.log(
+      "Logging out user with refresh token:",
+      refreshToken ? "exists" : "not found"
+    );
+
+    // Create a JSON response
+    const response = NextResponse.json(
+      { success: true, message: "Logged out successfully" },
+      { status: 200 }
+    );
+
+    // Clear the refresh token cookie with multiple attributes
+    response.cookies.set({
+      name: "refreshToken",
+      value: "",
+      expires: new Date(0), // Immediately expire the cookie
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Only secure in production
+      sameSite: "strict",
+      path: "/",
+      domain:
+        process.env.NODE_ENV === "production" ? ".yourdomain.com" : undefined, // Set domain if needed
+    });
+
+    console.log(
+      "Logging out user with refresh token:",
+      refreshToken ? "exists" : "not found"
+    );
+
+    return response;
   } catch (error) {
-    console.error('Logout error:', error);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Logout error:", error);
+    return NextResponse.json(
+      { success: false, error: "Server error" },
+      { status: 500 }
+    );
   }
 }
