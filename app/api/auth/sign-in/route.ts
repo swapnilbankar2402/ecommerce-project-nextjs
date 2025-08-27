@@ -1,8 +1,4 @@
-import {
-  setRefreshCookie,
-  signAccessToken,
-  signRefreshToken,
-} from "@/lib/auth";
+import { setAuthCookies, signAccessToken, signRefreshToken } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { NextResponse } from "next/server";
@@ -36,8 +32,8 @@ export async function POST(req: Request) {
     });
     const refreshToken = signRefreshToken({ userId: user._id.toString() });
 
-    // Set HttpOnly cookie for refresh token
-    setRefreshCookie(refreshToken);
+    // Set HttpOnly cookie
+    setAuthCookies(accessToken, refreshToken);
 
     const userObj = user.toObject();
 

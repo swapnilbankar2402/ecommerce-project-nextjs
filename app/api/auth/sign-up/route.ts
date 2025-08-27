@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import {
-  setRefreshCookie,
-  signAccessToken,
-  signRefreshToken,
-} from "@/lib/auth";
+import { setAuthCookies, signAccessToken, signRefreshToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -44,8 +40,8 @@ export async function POST(req: Request) {
     });
     const refreshToken = signRefreshToken({ userId: savedUser._id.toString() });
 
-    // Set HttpOnly cookie for refresh token
-    setRefreshCookie(refreshToken);
+    // Set HttpOnly cookie
+    setAuthCookies(accessToken, refreshToken);
 
     return NextResponse.json(
       {
