@@ -28,7 +28,8 @@ import {
     Star,
     Eye,
     Edit,
-    Trash2
+    Trash2,
+    List
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -49,9 +50,15 @@ export default function VendorProductsPage() {
                         />
                     </div>
                     <Button asChild>
+                        <Link href="/vendor/products/list">
+                            <List className="h-4 w-4" />
+                            List
+                        </Link>
+                    </Button>
+                    <Button asChild>
                         <Link href="/vendor/products/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Product
+                            <Plus className="h-4 w-4" />
+                            Add
                         </Link>
                     </Button>
                 </div>

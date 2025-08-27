@@ -1,11 +1,38 @@
-export interface Product {
+export interface CategoryType {
+  _id: string;
+  name: string;
+}
+
+export interface VariantType {
+  sku: string;
+  title: string;
+  options: any;
+  compareAtPrice: number;
+  stock: number;
+  barcode: string;
+  weight: number;
+  images: string[];
+  _id: string;
+}
+export interface ProductType {
   _id: string;
   title: string;
+  slug: string;
   description: string;
   price: number;
   images: string[];
-  category: string;
-  stock: number;
+  category: CategoryType;
+  tags: string[];
+  status: string;
+  basePrice: number;
+  currency: string;
+  variants: VariantType[];
+  ratingAverage: number;
+  ratingCount: number;
+  seo: {
+    title: string;
+    description: string;
+  };
 }
 
 export interface UserType {
@@ -28,7 +55,7 @@ export interface VendorType {
   logoUrl: string;
   bannerUrl: string;
   status: string;
-  products?: Product[];
+  products?: ProductType[];
   // Payments & banking
   stripeAccountId: string;
   paypalMerchantId: string;

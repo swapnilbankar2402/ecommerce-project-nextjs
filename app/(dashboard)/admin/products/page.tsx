@@ -1,5 +1,5 @@
-// app/admin/products/page.tsx
 'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,8 @@ import {
     Star,
     Eye,
     Edit,
-    Trash2
+    Trash2,
+    List
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -50,8 +51,14 @@ export default function AdminProductsPage() {
                     </div>
                     <Button asChild>
                         <Link href="/admin/products/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Product
+                            <List className=" h-4 w-4" />
+                            List
+                        </Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/admin/products/new">
+                            <Plus className=" h-4 w-4" />
+                            Add
                         </Link>
                     </Button>
                 </div>
