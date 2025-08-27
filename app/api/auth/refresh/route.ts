@@ -1,7 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import User from "@/models/User";
 import { signAccessToken, verifyRefreshToken } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RefreshResponseBody {
@@ -23,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify refresh token
-    const decoded = verifyRefreshToken(refreshToken);
+    const decoded = await verifyRefreshToken(refreshToken);
 
     if (!decoded) {
       return NextResponse.json(
@@ -33,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new access token
-    const newAccessToken = signAccessToken({ userId: decoded.userId });
+    const newAccessToken =  await signAccessToken({ userId: decoded.userId });
 
     // Set new access token in cookie
     const response = NextResponse.json({
@@ -45,7 +42,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       path: "/",
       maxAge: 15 * 60, // 15 minutes
-      sameSite: "strict",
+      sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
 

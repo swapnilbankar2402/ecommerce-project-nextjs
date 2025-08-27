@@ -1,114 +1,96 @@
 import { verifyAccessToken } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { getTokenFromRequest, jsonResponse } from "@/lib/helper-functions";
 import User from "@/models/User";
 import Vendor from "@/models/Vendor";
-import { vendorService } from "@/services/vendorService";
 import mongoose from "mongoose";
-import { NextRequest, NextResponse } from "next/server";
-
-// export async function POST(req: Request) {
-//   await connectDB();
-//   const body = await req.json();
-//   const vendor = await vendorService.createVendor(body);
-//   return NextResponse.json(vendor, { status: 201 });
-// }
+import { NextRequest } from "next/server";
 
 interface VendorRequestBody {
   storeName: string;
   email: string;
-  description: string;
+  description?: string;
   logoUrl?: string;
   bannerUrl?: string;
-  shippingPolicy: string;
-  returnPolicy: string;
-  supportEmail: string;
-  slug: string;
-  ownerUser: string;
+  shippingPolicy?: string;
+  returnPolicy?: string;
+  supportEmail?: string;
+  slug?: string;
+  ownerUser?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const authHeader = request.headers.get("authorization");
-    // console.log("authHeader :", authHeader);
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
+    const token = await getTokenFromRequest(request);
+    if (!token) {
+      return jsonResponse(
         { success: false, error: "Authentication required" },
-        { status: 401 }
+        401
       );
     }
 
-    const token = authHeader.substring(7);
-    const decoded = verifyAccessToken(token);
-
-    console.log("decoded first :::", decoded);
-
-    if (!decoded) {
-      return NextResponse.json(
-        { success: false, error: "Invalid token" },
-        { status: 401 }
-      );
+    const decoded = await verifyAccessToken(token);
+    if (!decoded || typeof decoded !== "object" || !("userId" in decoded)) {
+      return jsonResponse({ success: false, error: "Invalid token" }, 401);
     }
 
     await connectDB();
-
     const body: VendorRequestBody = await request.json();
 
-    console.log("decoded :::", decoded);
+    if (!body.storeName || !body.email) {
+      return jsonResponse(
+        { success: false, error: "Store name and email are required" },
+        400
+      );
+    }
 
-    // Check if user exists
-    // const user = await User.findById(decoded.userId);
-    // if (!user) {
-    //   return NextResponse.json(
-    //     { success: false, error: "User not found" },
-    //     { status: 404 }
-    //   );
-    // }
+    const user = await User.findById(decoded.userId).lean();
+    if (!user) {
+      return jsonResponse({ success: false, error: "User not found" }, 404);
+    }
 
-    // // Check if user already has a vendor application
-    // const existingVendor = await Vendor.findOne({ ownerUser: user._id });
-    // if (existingVendor) {
-    //   return NextResponse.json(
-    //     { success: false, error: "You already have a vendor application" },
-    //     { status: 409 }
-    //   );
-    // }
+    const existingVendor = await Vendor.findOne({
+      ownerUser: decoded.userId,
+    }).lean();
+    if (existingVendor) {
+      return jsonResponse(
+        { success: false, error: "You already have a vendor application" },
+        409
+      );
+    }
 
-    // // Create new vendor
-    // const newVendor = new Vendor({
-    //   ...body,
-    //   ownerUser: user._id,
-    //   email: body.email || user.email,
-    // });
+    const vendor = await Vendor.create({
+      ownerUser: decoded.userId,
+      storeName: body.storeName,
+      email: body.email,
+      description: body.description || "",
+      logoUrl: body.logoUrl || "",
+      bannerUrl: body.bannerUrl || "",
+      settings: {
+        shippingPolicy: body.shippingPolicy || "",
+        returnPolicy: body.returnPolicy || "",
+        supportEmail: body.supportEmail || body.email,
+      },
+    });
 
-    // await newVendor.save();
-
-    // return NextResponse.json(
-    //   {
-    //     success: true,
-    //     message: "Vendor application submitted successfully",
-    //     vendor: {
-    //       id: newVendor._id.toString(),
-    //       storeName: newVendor.storeName,
-    //       slug: newVendor.slug,
-    //       status: newVendor.status,
-    //     },
-    //   },
-    //   { status: 201 }
-    // );
+    return jsonResponse(
+      {
+        success: true,
+        data: vendor,
+        message: "Vendor application submitted successfully",
+      },
+      201
+    );
   } catch (error) {
     console.error("Vendor application error:", error);
 
     if (error instanceof mongoose.Error.ValidationError) {
-      return NextResponse.json(
+      return jsonResponse(
         { success: false, error: "Invalid data provided" },
-        { status: 400 }
+        400
       );
     }
 
-    return NextResponse.json(
-      { success: false, error: "Server error" },
-      { status: 500 }
-    );
+    return jsonResponse({ success: false, error: "Server error" }, 500);
   }
 }

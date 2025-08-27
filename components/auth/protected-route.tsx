@@ -17,9 +17,9 @@ export default function ProtectedRoute({
   redirectTo = '/auth/sign-in'
 }: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useSelector((state: RootState) => state.auth);
-  console.log("isAuthenticated in protected route :", isAuthenticated);
-  console.log("user in protected route :", user);
-  console.log("isLoading in protected route :", isLoading);
+  // console.log("isAuthenticated in protected route :", isAuthenticated);
+  // console.log("user in protected route :", user);
+  // console.log("isLoading in protected route :", isLoading);
   const router = useRouter();
 
   useEffect(() => {

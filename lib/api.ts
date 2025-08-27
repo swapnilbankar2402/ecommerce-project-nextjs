@@ -1,77 +1,68 @@
-// lib/api.ts
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
-// Helper function to get a cookie by name
 const getCookie = (name: string): string | undefined => {
   if (typeof document === "undefined") return undefined;
-
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return undefined;
+  return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(name + "="))
+    ?.split("=")[1];
 };
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true, // Important for sending cookies
+  withCredentials: true,
 });
 
-// Request interceptor to add Authorization header
-api.interceptors.request.use(
-  (config) => {
-    // Get token from cookie instead of localStorage
-    const token = getCookie("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Request interceptor
+api.interceptors.request.use((config) => {
+  const token = getCookie("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// Response interceptor to handle token refresh
+// Refresh helper
+async function refreshAccessToken() {
+  await axios.post("/api/auth/refresh", {}, { withCredentials: true });
+  return getCookie("accessToken");
+}
+
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  (res) => res,
+  async (error: AxiosError<any>) => {
+    const originalRequest = error.config as any;
 
-    // If error is due to token expiration
+    // Handle expired token
     if (
       error.response?.status === 401 &&
       error.response?.data?.error === "TOKEN_EXPIRED" &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
-
       try {
-        // Call refresh token endpoint
-        const refreshResponse = await axios.post(
-          "/api/auth/refresh",
-          {},
-          { withCredentials: true }
-        );
-
-        // The new token is automatically set in the cookie by the server
-        // We don't need to manually update localStorage
-
-        // Update Authorization header for the retry
-        const newToken = getCookie("accessToken");
+        const newToken = await refreshAccessToken();
         if (newToken) {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
         }
-
-        // Retry original request
-        return api(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, redirect to login
+      } catch (err) {
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
-        return Promise.reject(refreshError);
+        return Promise.reject(err);
       }
     }
 
-    return Promise.reject(error);
+    // 🔑 Normalize error so frontend can always use error.message
+    return Promise.reject(
+      new Error(
+        (error.response?.data?.error as string) ||
+          error.message ||
+          "Something went wrong"
+      )
+    );
   }
 );
 

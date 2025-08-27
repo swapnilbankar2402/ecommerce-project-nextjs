@@ -1,29 +1,46 @@
 import mongoose, { Schema, InferSchemaType, models } from "mongoose";
 import { toJSONPlugin } from "./plugins/toJSON";
 
-const VendorSchema = new Schema({
-  ownerUser: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  storeName: { type: String, required: true, index: true },
-  slug: { type: String, required: true, unique: true, index: true },
-  email: { type: String, required: true, index: true },
-  description: String,
-  logoUrl: String,
-  bannerUrl: String,
-  status: { type: String, enum: ["pending","approved","rejected","suspended"], default: "pending", index: true },
-  // Payments & banking
-  stripeAccountId: { type: String, index: true },
-  paypalMerchantId: { type: String, index: true },
-  // Preferences
-  settings: {
-    shippingPolicy: String,
-    returnPolicy: String,
-    supportEmail: String,
+const VendorSchema = new Schema(
+  {
+    ownerUser: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    storeName: { type: String, required: true, index: true },
+    slug: { type: String, required: true, unique: true, index: true },
+    email: { type: String, required: true, index: true },
+    description: String,
+    logoUrl: String,
+    bannerUrl: String,
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "suspended"],
+      default: "pending",
+      index: true,
+    },
+    // Payments & banking
+    stripeAccountId: { type: String, index: true },
+    paypalMerchantId: { type: String, index: true },
+    // Preferences
+    settings: {
+      shippingPolicy: String,
+      returnPolicy: String,
+      supportEmail: String,
+    },
   },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-VendorSchema.pre("validate", function(next) {
+VendorSchema.pre("validate", function (next) {
   if (!this.slug && this.storeName) {
-    this.slug = this.storeName.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+    this.slug = this.storeName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
   next();
 });

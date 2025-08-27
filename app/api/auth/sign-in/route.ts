@@ -46,12 +46,12 @@ export async function POST(req: Request) {
       { status: 201 }
     );
 
-    // Set access token cookie (non-HttpOnly so client can read it)
+    // Set access token cookie (HttpOnly for security)
     response.cookies.set("accessToken", accessToken, {
       httpOnly: false, // Allow JavaScript access
       path: "/",
       maxAge: 15 * 60, // 15 minutes
-      sameSite: "strict",
+      sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
 
