@@ -1,21 +1,20 @@
-// components/ProtectedRoute.tsx
+"use client"
+
 import { useSelector } from 'react-redux';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { RootState } from '@/store/store';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRoles?: ("customer" | "vendor" | "admin")[];
-  requireAllRoles?: boolean; // If true, user must have ALL roles; if false, ANY role is sufficient
+  requiredRoles?: string[];
   redirectTo?: string;
 }
 
 export default function ProtectedRoute({
   children,
   requiredRoles = [],
-  requireAllRoles = false,
-  redirectTo = '/login'
+  redirectTo = '/auth/sign-in'
 }: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
@@ -25,16 +24,13 @@ export default function ProtectedRoute({
       if (!isAuthenticated) {
         router.push(redirectTo);
       } else if (requiredRoles.length > 0 && user) {
-        const hasRequiredRole = requireAllRoles
-          ? requiredRoles.every(role => user.roles.includes(role))
-          : requiredRoles.some(role => user.roles.includes(role));
-        
+        const hasRequiredRole = requiredRoles.some(role => user.roles.includes(role as any));
         if (!hasRequiredRole) {
           router.push('/unauthorized');
         }
       }
     }
-  }, [isAuthenticated, user, isLoading, requiredRoles, requireAllRoles, redirectTo, router]);
+  }, [isAuthenticated, user, isLoading, requiredRoles, redirectTo, router]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -45,10 +41,7 @@ export default function ProtectedRoute({
   }
 
   if (requiredRoles.length > 0 && user) {
-    const hasRequiredRole = requireAllRoles
-      ? requiredRoles.every(role => user.roles.includes(role))
-      : requiredRoles.some(role => user.roles.includes(role));
-    
+    const hasRequiredRole = requiredRoles.some(role => user.roles.includes(role as any));
     if (!hasRequiredRole) {
       return null;
     }

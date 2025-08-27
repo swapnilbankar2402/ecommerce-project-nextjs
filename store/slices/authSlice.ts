@@ -4,7 +4,7 @@ import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   roles: ("customer" | "vendor" | "admin")[];
