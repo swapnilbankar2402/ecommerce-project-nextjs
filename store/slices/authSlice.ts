@@ -1,4 +1,3 @@
-// store/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -16,7 +15,6 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -36,7 +34,6 @@ interface AuthResponse {
 
 const initialState: AuthState = {
   user: null,
-  accessToken: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
@@ -138,15 +135,11 @@ const authSlice = createSlice({
   reducers: {
     clearAuth: (state) => {
       state.user = null;
-      state.accessToken = null;
       state.isAuthenticated = false;
       state.error = null;
     },
     clearError: (state) => {
       state.error = null;
-    },
-    setAccessToken: (state, action: PayloadAction<string>) => {
-      state.accessToken = action.payload;
     },
     updateUserRoles: (
       state,
@@ -167,7 +160,6 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user || null;
-        state.accessToken = action.payload.accessToken || null;
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -175,12 +167,7 @@ const authSlice = createSlice({
         state.error = action.payload ?? null;
         state.isAuthenticated = false;
       })
-      // Token refresh
-      .addCase(refreshUserToken.fulfilled, (state, action) => {
-        state.accessToken = action.payload;
-      })
       .addCase(refreshUserToken.rejected, (state, action) => {
-        state.accessToken = null;
         state.isAuthenticated = false;
         state.user = null;
         state.error = action.payload ?? null;
@@ -192,7 +179,6 @@ const authSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;
-        state.accessToken = null;
         state.isAuthenticated = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
@@ -207,7 +193,6 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user || null;
-        state.accessToken = action.payload.accessToken || null;
         state.isAuthenticated = true;
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -225,6 +210,5 @@ const persistConfig = {
   whitelist: ["user", "isAuthenticated", "accessToken"], // Only persist these fields
 };
 
-export const { clearAuth, clearError, setAccessToken, updateUserRoles } =
-  authSlice.actions;
+export const { clearAuth, clearError, updateUserRoles } = authSlice.actions;
 export default persistReducer(persistConfig, authSlice.reducer);

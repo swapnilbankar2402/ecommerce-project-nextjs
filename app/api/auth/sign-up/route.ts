@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import { setAuthCookies, signAccessToken, signRefreshToken } from "@/lib/auth";
+import { signAccessToken, signRefreshToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -34,16 +34,19 @@ export async function POST(req: Request) {
     // console.log("savedUser :", savedUser);
 
     // Create tokens
-    const accessToken = signAccessToken({
+    const accessToken = await signAccessToken({
       userId: savedUser._id.toString(),
       roles: savedUser.roles,
     });
-    const refreshToken = signRefreshToken({ userId: savedUser._id.toString() });
+    const refreshToken = await signRefreshToken({
+      userId: savedUser._id.toString(),
+    });
 
     // Set HttpOnly cookie
-    setAuthCookies(accessToken, refreshToken);
+    // setAuthCookies(accessToken, refreshToken);
 
-    return NextResponse.json(
+    // Create response and set cookies
+    const response = NextResponse.json(
       {
         success: true,
         accessToken,
@@ -51,6 +54,26 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
+
+    // Set access token cookie (non-HttpOnly so client can read it)
+    response.cookies.set("accessToken", accessToken, {
+      httpOnly: false, // Allow JavaScript access
+      path: "/",
+      maxAge: 15 * 60, // 15 minutes
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    // Set refresh token cookie (HttpOnly for security)
+    response.cookies.set("refreshToken", refreshToken, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return response;
   } catch (error) {
     console.error(error);
     return NextResponse.json(
