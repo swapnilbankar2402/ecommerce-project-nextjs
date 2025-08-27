@@ -1,3 +1,5 @@
+// frontend only utils should be here
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

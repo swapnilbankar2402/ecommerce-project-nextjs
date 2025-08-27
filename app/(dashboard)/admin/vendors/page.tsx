@@ -1,5 +1,5 @@
-// app/admin/vendors/page.tsx
 'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,8 +31,66 @@ import {
     Calendar
 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { VendorType } from '@/types/types';
+import { toast } from 'sonner';
+import api from '@/lib/api';
 
 export default function AdminVendorsPage() {
+
+    const [vendors, setVendors] = useState<VendorType[]>([])
+    const [loading, setLoading] = useState<boolean>(false);
+
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'approved':
+                return 'bg-green-500';
+            case 'rejected':
+                return 'bg-red-500';
+            case 'suspended':
+                return 'bg-yellow-500';
+            default: // pending
+                return 'bg-blue-500';
+        }
+    };
+    const getStatusText = (status: string) => {
+        switch (status) {
+            case 'approved':
+                return 'Approved';
+            case 'rejected':
+                return 'Rejected';
+            case 'suspended':
+                return 'Suspended';
+            default: // pending
+                return 'Pending';
+        }
+    };
+
+
+
+    const fetchVendors = async () => {
+        try {
+            setLoading(true)
+            const response = await api.get("/api/vendors")
+            console.log("response is here :::", response);
+            if (response.data.success) {
+                // toast.success(response.data.message);
+                setVendors(response.data.data)
+            } else {
+                toast.error(response.data.error);
+            }
+        } catch (error: any) {
+            toast.error(error.message);
+            setLoading(false)
+
+        }
+    }
+
+    useEffect(() => {
+        fetchVendors();
+    }, [])
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -65,7 +123,7 @@ export default function AdminVendorsPage() {
                         <Store className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">342</div>
+                        <div className="text-2xl font-bold">{vendors.length}</div>
                         <p className="text-xs text-muted-foreground">
                             +5.7% from last month
                         </p>
@@ -78,7 +136,7 @@ export default function AdminVendorsPage() {
                         <Store className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">298</div>
+                        <div className="text-2xl font-bold">{vendors.filter((v) => v.status === 'approved')?.length}</div>
                         <p className="text-xs text-muted-foreground">
                             87% of total vendors
                         </p>
@@ -91,7 +149,7 @@ export default function AdminVendorsPage() {
                         <Store className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">12</div>
+                        <div className="text-2xl font-bold">{vendors.filter((v) => v.status === 'pending')?.length}</div>
                         <p className="text-xs text-muted-foreground">
                             Require review
                         </p>
@@ -119,60 +177,9 @@ export default function AdminVendorsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {[
-                                {
-                                    id: 1,
-                                    name: 'TechGadgets',
-                                    email: 'contact@techgadgets.com',
-                                    phone: '+1 (555) 123-4567',
-                                    location: 'New York, USA',
-                                    products: 124,
-                                    status: 'Active',
-                                    joined: '2023-01-15'
-                                },
-                                {
-                                    id: 2,
-                                    name: 'FashionHub',
-                                    email: 'info@fashionhub.com',
-                                    phone: '+1 (555) 987-6543',
-                                    location: 'Los Angeles, USA',
-                                    products: 89,
-                                    status: 'Active',
-                                    joined: '2023-02-20'
-                                },
-                                {
-                                    id: 3,
-                                    name: 'HomeEssentials',
-                                    email: 'hello@homeessentials.com',
-                                    phone: '+1 (555) 456-7890',
-                                    location: 'Chicago, USA',
-                                    products: 67,
-                                    status: 'Pending',
-                                    joined: '2023-05-10'
-                                },
-                                {
-                                    id: 4,
-                                    name: 'BookWorld',
-                                    email: 'contact@bookworld.com',
-                                    phone: '+1 (555) 234-5678',
-                                    location: 'Miami, USA',
-                                    products: 156,
-                                    status: 'Active',
-                                    joined: '2023-03-05'
-                                },
-                                {
-                                    id: 5,
-                                    name: 'SportsGear',
-                                    email: 'info@sportsgear.com',
-                                    phone: '+1 (555) 876-5432',
-                                    location: 'Seattle, USA',
-                                    products: 43,
-                                    status: 'Inactive',
-                                    joined: '2022-11-12'
-                                },
-                            ].map((vendor) => (
-                                <TableRow key={vendor.id}>
-                                    <TableCell className="font-medium">{vendor.name}</TableCell>
+                            {vendors.map((vendor) => (
+                                <TableRow key={vendor._id}>
+                                    <TableCell className="font-medium">{vendor.storeName}</TableCell>
                                     <TableCell>
                                         <div className="text-sm">
                                             <div className="flex items-center">
@@ -191,16 +198,18 @@ export default function AdminVendorsPage() {
                                             {vendor.location}
                                         </div>
                                     </TableCell>
-                                    <TableCell>{vendor.products}</TableCell>
+                                    <TableCell>{vendor.products?.length}</TableCell>
                                     <TableCell>
-                                        <Badge variant={vendor.status === 'Active' ? 'default' : vendor.status === 'Pending' ? 'secondary' : 'outline'}>
-                                            {vendor.status}
+                                        <Badge variant={vendor.status === 'Active' ? 'default' : vendor.status === 'Pending' ? 'secondary' : 'outline'}
+                                            className={`${getStatusColor(vendor.status)} text-white border-none`}
+                                        >
+                                            {getStatusText(vendor.status)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center">
                                             <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                                            {vendor.joined}
+                                            {vendor.createdAt}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -214,14 +223,14 @@ export default function AdminVendorsPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={`/admin/vendors/${vendor.id}`}>View details</Link>
+                                                    <Link href={`/admin/vendors/${vendor._id}`}>View details</Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={`/admin/vendors/${vendor.id}/edit`}>Edit vendor</Link>
+                                                    <Link href={`/admin/vendors/${vendor._id}/edit`}>Edit vendor</Link>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
+                                                {/* <DropdownMenuSeparator />
                                                 <DropdownMenuItem>Approve vendor</DropdownMenuItem>
-                                                <DropdownMenuItem>Suspend vendor</DropdownMenuItem>
+                                                <DropdownMenuItem>Suspend vendor</DropdownMenuItem> */}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

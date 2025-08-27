@@ -12,6 +12,8 @@ const VendorSchema = new Schema(
     storeName: { type: String, required: true, index: true },
     slug: { type: String, required: true, unique: true, index: true },
     email: { type: String, required: true, index: true },
+    phone: { type: String },
+    location: { type: String },
     description: String,
     logoUrl: String,
     bannerUrl: String,
