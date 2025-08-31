@@ -77,7 +77,7 @@ export default function VendorApplicationForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
-    
+
     const form = useForm<VendorFormValues>({
         resolver: zodResolver(vendorFormSchema),
         defaultValues: {
@@ -92,7 +92,7 @@ export default function VendorApplicationForm() {
         },
         mode: 'onChange',
     });
-    
+
     const { watch, trigger, formState: { isValid, dirtyFields } } = form;
     const watchedValues = watch();
 
@@ -103,12 +103,12 @@ export default function VendorApplicationForm() {
                 setIsLoading(false);
                 return;
             }
-            
+
             try {
                 const response = await api.get('/api/vendors/me');
                 if (response.data.success) {
                     // User has an existing application, redirect to status page
-                    router.push('/vendor/status');
+                    router.push('/vendor/become-a-vendor/status');
                 }
             } catch (error: any) {
                 // If 404, no application exists, so continue
@@ -164,8 +164,8 @@ export default function VendorApplicationForm() {
                 .trim()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/(^-|-$)/g, "");
-            const vendorData = { 
-                ...data, 
+            const vendorData = {
+                ...data,
                 slug,
                 settings: {
                     shippingPolicy: data.shippingPolicy,
@@ -173,9 +173,9 @@ export default function VendorApplicationForm() {
                     supportEmail: data.supportEmail,
                 }
             };
-            
+
             const res = await api.post("/api/vendors/become-a-vendor", vendorData);
-            
+
             if (res.data.success) {
                 toast.success(res.data.message || "Application submitted successfully!");
                 // Redirect to status page after successful submission
@@ -223,7 +223,7 @@ export default function VendorApplicationForm() {
                 <h1 className="text-3xl font-bold mb-2">Become a Vendor</h1>
                 <p className="text-muted-foreground">Join our marketplace and start selling your products</p>
             </div>
-            
+
             {/* User Info Card */}
             {user && (
                 <Card className="mb-6 border-none shadow-sm">
@@ -240,7 +240,7 @@ export default function VendorApplicationForm() {
                     </CardContent>
                 </Card>
             )}
-            
+
             <Card className="border-none shadow-lg">
                 <CardHeader className="pb-6">
                     <div className="flex items-center justify-between mb-2">
@@ -273,7 +273,7 @@ export default function VendorApplicationForm() {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             {/* Step Content */}
                             <div className="min-h-[400px]">
                                 {currentStep === 0 && (
@@ -340,7 +340,7 @@ export default function VendorApplicationForm() {
                                         />
                                     </div>
                                 )}
-                                
+
                                 {currentStep === 1 && (
                                     <div className="space-y-6">
                                         <div>
@@ -461,7 +461,7 @@ export default function VendorApplicationForm() {
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {currentStep === 2 && (
                                     <div className="space-y-6">
                                         <div>
@@ -528,7 +528,7 @@ export default function VendorApplicationForm() {
                                         />
                                     </div>
                                 )}
-                                
+
                                 {currentStep === 3 && (
                                     <div className="space-y-6">
                                         <div>
@@ -606,7 +606,7 @@ export default function VendorApplicationForm() {
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {/* Navigation Buttons */}
                                 <div className="flex justify-between pt-6">
                                     <Button

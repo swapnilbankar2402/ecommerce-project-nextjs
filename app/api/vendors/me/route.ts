@@ -7,7 +7,9 @@ import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("api working start :");
     const token = await getTokenFromRequest(request);
+    console.log("token :", token);
 
     if (!token) {
       return jsonResponse(
@@ -17,6 +19,8 @@ export async function GET(request: NextRequest) {
     }
 
     const decoded = await verifyAccessToken(token);
+    console.log("decoded :", decoded);
+
     if (!decoded || typeof decoded !== "object" || !("userId" in decoded)) {
       return jsonResponse({ success: false, error: "Invalid token" }, 401);
     }
@@ -25,8 +29,10 @@ export async function GET(request: NextRequest) {
 
     // Find vendor by owner user ID
     const vendor = await Vendor.findOne({ ownerUser: decoded.userId })
-      .populate("ownerUser", "name email") // Optional: populate user details
+      // .populate("ownerUser", "name email") // Optional: populate user details
       .exec();
+
+    console.log("vendor ::", vendor);
 
     if (!vendor) {
       return jsonResponse({ success: false, error: "Vendor not found" }, 404);
@@ -34,12 +40,12 @@ export async function GET(request: NextRequest) {
 
     return jsonResponse({ success: true, data: vendor });
   } catch (error) {
-    if (error instanceof mongoose.Error.ValidationError) {
-      return jsonResponse(
-        { success: false, error: "Invalid data provided" },
-        400
-      );
-    }
+    // if (error instanceof mongoose.Error.ValidationError) {
+    //   return jsonResponse(
+    //     { success: false, error: "Invalid data provided" },
+    //     400
+    //   );
+    // }
 
     return jsonResponse({ success: false, error: "Server error" }, 500);
   }
