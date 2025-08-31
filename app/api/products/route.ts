@@ -1,35 +1,22 @@
-// import { NextResponse } from "next/server";
-// import { connectDB } from "@/lib/db";
-// import { productService } from "@/services/productService";
-
-// export async function GET() {
-//   await connectDB();
-//   const products = await productService.getProducts({});
-//   return NextResponse.json(products);
-// }
-
-// export async function POST(req: Request) {
-//   await connectDB();
-//   const body = await req.json();
-//   const product = await productService.createProduct(body);
-//   return NextResponse.json(product, { status: 201 });
-// }
-
-
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 import Vendor from "@/models/Vendor";
+import { jsonResponse } from "@/lib/helper-functions";
 
-// ✅ Get all products (public, with filters)
-export async function GET(req: Request) {
+// Get all products
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
 
     const vendor = searchParams.get("vendor");
     const category = searchParams.get("category");
     const search = searchParams.get("q");
+
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const skip = (page - 1) * limit;
 
     const query: any = {};
     if (vendor) query.vendor = vendor;
@@ -37,43 +24,53 @@ export async function GET(req: Request) {
     if (search) query.title = { $regex: search, $options: "i" };
 
     const products = await Product.find(query)
-      .populate("vendor", "storeName status")
-      .limit(50)
-      .lean();
+      .populate("vendor", "storeName status", "category", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    // .limit(50)
+    // .lean();
 
-    return NextResponse.json(products, { status: 200 });
+    const total = await Product.countDocuments();
+
+    return jsonResponse(
+      {
+        success: true,
+        data: products,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      200
+    );
   } catch (err) {
     console.error("Error fetching products", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return jsonResponse({ success: false, error: "Server error" }, 500);
   }
 }
 
-// ✅ Create new product (vendor only)
-export async function POST(req: Request) {
+// Create new product
+export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    const body = await req.json();
-    const { vendor, title, description, price, images, category, stock } = body;
+    const body = await request.json();
 
-    // Ensure vendor exists & is approved
-    const vendorExists = await Vendor.findById(vendor);
-    if (!vendorExists || vendorExists.status !== "approved") {
-      return NextResponse.json({ error: "Vendor not approved or not found" }, { status: 400 });
-    }
+    const product = new Product(body);
+    await product.save();
 
-    const product = await Product.create({
-      vendor,
-      title,
-      description,
-      price,
-      images,
-      category,
-      stock,
-    });
-
-    return NextResponse.json(product, { status: 201 });
-  } catch (err) {
-    console.error("Error creating product", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return jsonResponse(
+      {
+        success: true,
+        data: product,
+        message: "Product created successfully",
+      },
+      201
+    );
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return jsonResponse({ success: false, error: "Server error" }, 500);
   }
 }

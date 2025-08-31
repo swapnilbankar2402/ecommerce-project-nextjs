@@ -182,6 +182,8 @@ export default function ProductForm({ product, onSuccess, onCancel }: ProductFor
                 images: [...data.images, ...uploadedImages]
             };
 
+            console.log("formData :", formData)
+
             const url = product ? `/api/products/${product._id}` : '/api/products';
             const method = product ? 'put' : 'post';
 
