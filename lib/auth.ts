@@ -10,6 +10,12 @@ interface UserPayload extends JWTPayload {
   userId: string;
   role?: string;
 }
+interface VendorPayload extends JWTPayload {
+  vendorId: string;
+  email: string;
+}
+
+//#region for user
 
 export async function signAccessToken(payload: UserPayload) {
   return new SignJWT(payload)
@@ -58,6 +64,57 @@ export async function verifyRefreshToken(
     return null;
   }
 }
+//#endregion
+
+//#region for vendor
+export async function signVendorAccessToken(payload: VendorPayload) {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("15m")
+    .sign(ACCESS_SECRET);
+}
+
+export async function signVendorRefreshToken(payload: VendorPayload) {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(REFRESH_SECRET);
+}
+
+export async function verifyVendorAccessToken(
+  token: string
+): Promise<VendorPayload | { name: string; message: string } | null> {
+  try {
+    const { payload } = await jwtVerify(token, ACCESS_SECRET);
+    // Check if payload has vendorId
+    if (payload && typeof payload === "object" && "vendorId" in payload) {
+      return payload as VendorPayload;
+    }
+    return null;
+  } catch (error: any) {
+    if (error.code === "ERR_JWT_EXPIRED") {
+      return { name: "TokenExpiredError", message: error.message };
+    }
+    return null;
+  }
+}
+
+export async function verifyVendorRefreshToken(
+  token: string
+): Promise<VendorPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, REFRESH_SECRET);
+    if (payload && typeof payload === "object" && "vendorId" in payload) {
+      return payload as VendorPayload;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+//#endregion
 
 // Error: The edge runtime does not support Node.js 'crypto' module.(This error was coming when using jsonwebtoken, when using verifyAccessToken in middleware.js file, so therefore switched to another package)
 

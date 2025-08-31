@@ -7,9 +7,7 @@ import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("api working start :");
     const token = await getTokenFromRequest(request);
-    console.log("token :", token);
 
     if (!token) {
       return jsonResponse(
@@ -19,7 +17,6 @@ export async function GET(request: NextRequest) {
     }
 
     const decoded = await verifyAccessToken(token);
-    console.log("decoded :", decoded);
 
     if (!decoded || typeof decoded !== "object" || !("userId" in decoded)) {
       return jsonResponse({ success: false, error: "Invalid token" }, 401);
@@ -31,8 +28,6 @@ export async function GET(request: NextRequest) {
     const vendor = await Vendor.findOne({ ownerUser: decoded.userId })
       // .populate("ownerUser", "name email") // Optional: populate user details
       .exec();
-
-    console.log("vendor ::", vendor);
 
     if (!vendor) {
       return jsonResponse({ success: false, error: "Vendor not found" }, 404);

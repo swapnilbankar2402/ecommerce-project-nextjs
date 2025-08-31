@@ -15,10 +15,6 @@ const UserSchema = new Schema(
       enum: ["customer", "vendor", "admin"],
       default: ["customer"], // everyone starts as customer
     },
-
-    // Vendor reference (if they applied to become vendor)
-    vendorProfile: { type: Schema.Types.ObjectId, ref: "Vendor" },
-
     // Security
     isActive: { type: Boolean, default: true },
     lastLogin: Date,
