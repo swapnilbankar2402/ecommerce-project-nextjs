@@ -1,79 +1,6 @@
 import mongoose, { Schema, InferSchemaType, models } from "mongoose";
 import { toJSONPlugin } from "./plugins/toJSON";
 
-// const VendorSchema = new Schema(
-//   {
-//     email: { type: String, unique: true, required: true, index: true },
-//     // Basic vendor info
-//     businessName: { type: String },
-//     businessType: { type: String, enum: ["individual", "company"] },
-//     taxId: String,
-//     contact: {
-//       name: String,
-//       phone: String,
-//       email: String,
-//     },
-//     // Current application data
-//     currentApplication: {
-//       storeName: { type: String, required: true, index: true },
-//       slug: { type: String, required: true, unique: true, index: true },
-//       logoUrl: String,
-//       bannerUrl: String,
-//       phone: { type: String },
-//       location: { type: String },
-//       description: String,
-//       settings: {
-//         shippingPolicy: String,
-//         returnPolicy: String,
-//         supportEmail: String,
-//       },
-//       verification: {
-//         status: { type: String, enum: ["pending", "approved", "rejected"] },
-//         documents: [String],
-//         notes: String,
-//         submittedAt: Date,
-//         reviewedAt: Date,
-//       },
-//       // Payments & banking
-//       stripeAccountId: { type: String, index: true },
-//       paypalMerchantId: { type: String, index: true },
-//     },
-//     // Previous applications
-//     applicationHistory: [
-//       {
-//         storeName: { type: String, required: true, index: true },
-//         slug: { type: String, required: true, unique: true, index: true },
-//         logoUrl: String,
-//         bannerUrl: String,
-//         phone: { type: String },
-//         location: { type: String },
-//         description: String,
-//         settings: {
-//           shippingPolicy: String,
-//           returnPolicy: String,
-//           supportEmail: String,
-//         },
-//         verification: {
-//           status: { type: String, enum: ["pending", "approved", "rejected"] },
-//           documents: [String],
-//           notes: String,
-//           submittedAt: Date,
-//           reviewedAt: Date,
-//         },
-//         // Payments & banking
-//         stripeAccountId: { type: String, index: true },
-//         paypalMerchantId: { type: String, index: true },
-//       },
-//     ],
-//     commission: Number,
-//     payoutInfo: {
-//       method: { type: String, enum: ["bank", "paypal", "stripe"] },
-//       accountDetails: Object,
-//     },
-//   },
-//   { timestamps: true }
-// );
-
 const VendorSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
@@ -106,7 +33,7 @@ const VendorSchema = new mongoose.Schema(
           enum: ["pending", "approved", "rejected"],
           default: "pending",
         },
-        documents: [{ type: String }],
+        documents: [{ type: String ,}],
         notes: { type: String },
         submittedAt: { type: Date, default: Date.now },
         reviewedAt: { type: Date },

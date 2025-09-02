@@ -50,7 +50,7 @@ export default function VendorLoginPage() {
   // Redirect if authenticated
   useEffect(() => {
     if (isAuthenticated && vendor) {
-      // router.push('/vendor/dashboard');
+      router.push('/vendor/dashboard');
     }
   }, [isAuthenticated, vendor, router]);
 

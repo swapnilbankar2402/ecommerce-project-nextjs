@@ -115,29 +115,29 @@ export const loginVendor = createAsyncThunk<
   }
 });
 
-// Async thunk for vendor register
-export const registerVendor = createAsyncThunk<
-  VendorAuthResponse,
-  VendorRegisterData,
-  { rejectValue: string }
->("vendorAuth/registerVendor", async (vendorData, { rejectWithValue }) => {
-  try {
-    const response = await fetch("/api/vendors/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vendorData),
-    });
-    const data: VendorAuthResponse = await response.json();
-    if (!response.ok || !data.success) {
-      return rejectWithValue(data.error || "Vendor registration failed");
-    }
-    return data;
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error ? error.message : "Unknown error"
-    );
-  }
-});
+// // Async thunk for vendor register
+// export const registerVendor = createAsyncThunk<
+//   VendorAuthResponse,
+//   VendorRegisterData,
+//   { rejectValue: string }
+// >("vendorAuth/registerVendor", async (vendorData, { rejectWithValue }) => {
+//   try {
+//     const response = await fetch("/api/vendors/register", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(vendorData),
+//     });
+//     const data: VendorAuthResponse = await response.json();
+//     if (!response.ok || !data.success) {
+//       return rejectWithValue(data.message || "Vendor registration failed");
+//     }
+//     return data;
+//   } catch (error) {
+//     return rejectWithValue(
+//       error instanceof Error ? error.message : "Unknown error"
+//     );
+//   }
+// });
 
 // Async thunk for vendor logout
 export const logoutVendor = createAsyncThunk<
@@ -191,20 +191,20 @@ const vendorAuthSlice = createSlice({
         state.error = action.payload ?? null;
       })
       // Vendor register
-      .addCase(registerVendor.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(registerVendor.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.vendor = action.payload.data.vendor || null;
-        state.isAuthenticated = true;
-      })
-      .addCase(registerVendor.rejected, (state, action) => {
-        (state.isAuthenticated = false),
-          (state.isLoading = false),
-          (state.error = action.payload ?? null);
-      })
+      // .addCase(registerVendor.pending, (state) => {
+      //   state.isLoading = true;
+      //   state.error = null;
+      // })
+      // .addCase(registerVendor.fulfilled, (state, action) => {
+      //   state.isLoading = false;
+      //   state.vendor = action.payload.data.vendor || null;
+      //   state.isAuthenticated = true;
+      // })
+      // .addCase(registerVendor.rejected, (state, action) => {
+      //   (state.isAuthenticated = false),
+      //     (state.isLoading = false),
+      //     (state.error = action.payload ?? null);
+      // })
       // Vendor Logout
       .addCase(logoutVendor.pending, (state) => {
         state.isLoading = true;

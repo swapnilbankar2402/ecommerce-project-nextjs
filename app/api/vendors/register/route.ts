@@ -10,23 +10,40 @@ import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
+interface VendorApplicationRequestBody {
+  email: string;
+  password: string;
+  businessName: string;
+  businessType: string;
+  taxId: string;
+  contact: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+  currentApplication: {
+    storeName: string;
+    storeDescription: string;
+    logo: string;
+    banner: string;
+    policies: {
+      shipping: string;
+      returns: string;
+      warranty: string;
+    };
+  };
+  payoutInfo: {
+    method: string;
+    accountDetails: any;
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    const {
-      email,
-      password,
-      businessName,
-      businessType,
-      taxId,
-      contact,
-      storeName,
-      storeDescription,
-      logo,
-      banner,
-      policies,
-      payoutInfo,
-    } = await request.json();
+
+    const { email, password, ...restFormData }: VendorApplicationRequestBody =
+      await request.json();
 
     // Check if vendor already exists
     const existingVendor = await Vendor.findOne({ email });
@@ -42,22 +59,22 @@ export async function POST(request: NextRequest) {
     const newVendor = new Vendor({
       email,
       password: hashedPassword,
-      businessName,
-      businessType,
-      taxId,
-      contact,
+      businessName: restFormData.businessName,
+      businessType: restFormData.businessType,
+      taxId: restFormData.taxId,
+      contact: restFormData.contact,
       currentApplication: {
-        storeName,
-        storeDescription,
-        logo,
-        banner,
-        policies,
+        storeName: restFormData.currentApplication.storeName,
+        storeDescription: restFormData.currentApplication.storeDescription,
+        logo: restFormData.currentApplication.logo,
+        banner: restFormData.currentApplication.banner,
+        policies: restFormData.currentApplication.policies,
         verification: {
           status: "pending",
           submittedAt: new Date(),
         },
       },
-      payoutInfo,
+      payoutInfo: restFormData.payoutInfo,
     });
 
     const savedVendorDoc = await newVendor.save();
@@ -86,7 +103,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
 
-    // Set vendor-specific cookies
+    // // Set vendor-specific cookies
     response.cookies.set("vendorAccessToken", accessToken, {
       httpOnly: false,
       path: "/",
@@ -113,6 +130,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return jsonResponse({ success: false, error: "Server error" }, 500);
+    return jsonResponse({ success: false, message: "Server error" }, 500);
   }
 }

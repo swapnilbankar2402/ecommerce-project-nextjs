@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/db";
 import { jsonResponse } from "@/lib/helper-functions";
 import Vendor from "@/models/Vendor";
 import bcrypt from "bcryptjs";
-import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 interface VendorLoginRequestBody {
@@ -14,7 +13,6 @@ interface VendorLoginRequestBody {
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    console.log("1");
     const body: VendorLoginRequestBody = await request.json();
 
     if (!body.email || !body.password) {
